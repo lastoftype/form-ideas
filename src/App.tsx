@@ -1,133 +1,63 @@
-import React, {
-  FC,
-  useState,
-  useCallback,
-  ChangeEvent,
-  FormEvent,
-} from "react";
+import React, { useState } from "react";
 import * as yup from "yup";
 
-interface IUser {
-  firstName: string;
-}
+import { TruckerContainer } from "./FormContainer";
+import { IUser, ITrucker } from "./models";
 
-const formSchema = yup.object<IUser>({
-  firstName: yup.string().email().required(),
-});
+const userSchema = yup
+  .object<IUser>({
+    firstName: yup.string().email().required("This is required."),
+    lastName: yup.string().email().required("This is required."),
+  })
+  .required();
 
-interface IFormContainerProps {
-  initialValues: {
-    [key: string]: any;
-  };
-  children: (args: {
-    isTouched: boolean;
-    validationErrors: any;
-    isSubmitted: boolean;
-    onSubmit: (e: FormEvent<HTMLFormElement>) => void;
-    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-    form: any;
-  }) => any;
-  schema: yup.Schema<any>;
-}
-
-const FormContainer: FC<IFormContainerProps> = ({
-  children,
-  schema,
-  initialValues,
-}: IFormContainerProps) => {
-  const [isTouched, setTouched] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [isSubmitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({ ...initialValues });
-
-  const validateForm = useCallback(() => {
-    try {
-      schema.validateSync(form, { abortEarly: false });
-      setValidationErrors({});
-    } catch (errs) {
-      const validationMessages = errs.inner.reduce(
-        (
-          acc: { [key: string]: string },
-          { path, message }: { path: string; message: string }
-        ) => {
-          acc[path] = message;
-          return acc;
-        },
-        {}
-      );
-      setValidationErrors(validationMessages);
-    }
-  }, [setValidationErrors, schema, form]);
-
-  const onSubmit = useCallback(
-    (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      e.persist();
-
-      setSubmitted(true);
-      validateForm();
-
-      if (Object.keys(validationErrors).length) {
-        return false;
-      }
-    },
-    [validateForm, validationErrors]
-  );
-
-  const onChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setTouched(true);
-    e.persist();
-    setForm((prevForm) => ({
-      ...prevForm,
-      [e.target.name]: e.target.value,
-    }));
-  }, []);
-
-  return (
-    <div className="FormContainer">
-      {children({
-        isTouched,
-        validationErrors,
-        isSubmitted,
-        onSubmit,
-        onChange,
-        form,
-      })}
-    </div>
-  );
-};
+const formSchema = yup
+  .object<ITrucker>({
+    id: yup.string(),
+    user: userSchema,
+  })
+  .required();
 
 function App() {
-  const [initialValues, setInitialValues] = useState({
-    firstName: "John",
+  const [initialValues] = useState<ITrucker>({
+    id: "12",
+    user: {
+      firstName: "John",
+      lastName: "Johnson",
+    },
   });
 
   return (
     <div className="App">
-      <FormContainer schema={formSchema} initialValues={initialValues}>
-        {({
-          isTouched,
-          validationErrors,
-          isSubmitted,
-          form,
-          onChange,
-          onSubmit,
-        }) => (
+      <TruckerContainer schema={formSchema} initialValues={initialValues}>
+        {({ validationErrors, form, onChange, onSubmit }) => (
           <form onSubmit={onSubmit}>
             <label htmlFor="firstName">first name</label>
             <input
               type="text"
-              name="firstName"
-              value={form.firstName}
+              name="user.firstName"
+              value={form?.user?.firstName}
               onChange={onChange}
             />
-            {validationErrors?.firstName && (
-              <div>{validationErrors.firstName}</div>
+            {validationErrors?.user?.firstName && (
+              <div>{validationErrors.user?.firstName}</div>
             )}
+
+            <label htmlFor="lastName">last name</label>
+            <input
+              type="text"
+              name="user.lastName"
+              value={form?.user?.lastName}
+              onChange={onChange}
+            />
+            {validationErrors?.user?.lastName && (
+              <div>{validationErrors.user?.lastName}</div>
+            )}
+
             <button type="submit">Submit</button>
           </form>
         )}
-      </FormContainer>
+      </TruckerContainer>
     </div>
   );
 }
