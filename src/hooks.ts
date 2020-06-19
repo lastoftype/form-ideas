@@ -63,7 +63,7 @@ export const useForm = <T extends Object = any>(
    * Handle input change
    */
   const onChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
+    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       e.persist();
       setTouched(true);
 

@@ -11,7 +11,7 @@ interface IFormContainerProps<T extends Object = any> {
     validationErrors: yup.InferType<yup.ObjectSchema<T>>;
     isSubmitted: boolean;
     onSubmit: (e: FormEvent<HTMLFormElement>) => void;
-    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+    onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     form: T;
   }) => any;
   schema: yup.ObjectSchema<T>;
